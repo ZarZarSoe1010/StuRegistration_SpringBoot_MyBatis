@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+	<div id="testheader">
+		<div class="container">
+            <div class=row>
+                <div class="col-md-5 ">
+                    <a th:href="@{/setupRegisterStudent}"> <h3>Student Registration</h3> </a>
+                </div>
+                <div class="col-md-6">
+                  	User               :<th:block th:if="${session.userInfo!=null}" th:text="${session.userInfo.name}"></th:block> <br>
+              	 	Current Date :<th:block th:if="${session.userInfo!=null}"th:text="${session.date}"></th:block>
+                </div>
+                <div class="col-md-1">
+                			<form class="login-form" th:action="@{/logout}" name="confirm" method="post"  >  
+                  					  <input type="submit" class="btn-basic" id="lgnout-button" value="Log Out">
+                        </form>
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="sidenav">
+			<button class="dropdown-btn">
+				Class Management <i class="fa fa-caret-down"></i>
+			</button>
+
+			<div class="dropdown-container">
+				<a th:href="@{/setupRegisterCourse}">Course Registration </a>
+				 <a th:href="@{/setupRegisterStudent}">Student Registration </a> 
+				 <a	th:href="@{/setupSearchStudent}">Student Search </a>
+			</div>
+			<a th:href="@{/userManagement}">Users Management</a>
+		</div>
+</body>
+</html>
