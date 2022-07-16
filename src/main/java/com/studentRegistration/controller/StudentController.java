@@ -34,17 +34,12 @@ public class StudentController {
     @RequestMapping(value = "/setupRegisterStudent", method = RequestMethod.GET)
     public ModelAndView setupRegisterStudent(ModelMap model) {
         List<Course> courseList = courseMapper.selectAllCourse();
-        model.addAttribute("courseList", courseList);
 
-        List<Student> stuList = studentMapper.selectAllStudent();
+        String studentId = GenerateNewStudentId();
         Student student = new Student();
-        if (stuList.size() == 0) {
-            student.setSid("STU001");
-        } else {
-            int tempId = Integer.parseInt(stuList.get(stuList.size() - 1).getSid().substring(3)) + 1;
-            String stuId = String.format("STU%03d", tempId);
-            student.setSid(stuId);
-        }
+        student.setSid(studentId);
+
+        model.addAttribute("courseList", courseList);
         return new ModelAndView("STU001", "student", student);
     }
 
@@ -57,20 +52,14 @@ public class StudentController {
             return new ModelAndView("STU001", "student", student);
         }
         studentMapper.insertStudent(student);
+        insertStudent_Course(student.getSid(), student.getCourses());
         model.addAttribute("msg", "Register Successful");
-        List<String> stuCourse = student.getCourses();
-        for (String course : stuCourse) {
-            studentMapper.insertStudent_Course(student.getSid(), course);
-        }
+
+        // rebuild new Student Object
+        String studentId = GenerateNewStudentId();
         student = new Student();
-        List<Student> stuList = studentMapper.selectAllStudent();
-        if (stuList.size() == 0) {
-            student.setSid("STU001");
-        } else {
-            int tempId = Integer.parseInt(stuList.get(stuList.size() - 1).getSid().substring(3)) + 1;
-            String stuId = String.format("STU%03d", tempId);
-            student.setSid(stuId);
-        }
+        student.setSid(studentId);
+
         List<Course> courseList = courseMapper.selectAllCourse();
         model.addAttribute("courseList", courseList);
         return new ModelAndView("STU001", "student", student);
@@ -79,10 +68,10 @@ public class StudentController {
     @RequestMapping(value = "/seeMore", method = RequestMethod.GET)
     public ModelAndView seeMore(@RequestParam("selectedStudentId") String id, ModelMap model) {
         Student student = studentMapper.selectOneStudent(id);
-        List<String> stuCourseIdList = studentMapper.selectCourseIdList(id);
         List<Course> courseList = courseMapper.selectAllCourse();
-        model.addAttribute("courseList", courseList);
+        List<String> stuCourseIdList = studentMapper.selectCourseIdList(id);
         student.setCourses(stuCourseIdList);
+        model.addAttribute("courseList", courseList);
         return new ModelAndView("STU002", "student", student);
     }
 
@@ -95,13 +84,10 @@ public class StudentController {
             return new ModelAndView("STU002", "student", student);
         }
         studentMapper.updateStudent(student);
-        model.addAttribute("msg", " Update Successful!!!");
         studentMapper.deleteStudent_Course(student.getSid());
-        List<String> stuCourse = student.getCourses();
-        for (String course : stuCourse) {
-            studentMapper.insertStudent_Course(student.getSid(), course);
-        }
+        insertStudent_Course(student.getSid(), student.getCourses());
 
+        model.addAttribute("msg", " Update Successful!!!");
         return new ModelAndView("STU002", "student", student);
     }
 
@@ -117,27 +103,42 @@ public class StudentController {
 
         String stuId = sid.isBlank() ? sid : ("%" + sid + "%");
         String stuName = sname.isBlank() ? sname : ("%" + sname + "%");
-        String stuCourse = scourse.isBlank() ? scourse : ("%" + scourse + "%");
+        String stuCourse = scourse.isBlank() ? scourse : ("%" + scourse + "%"); 
 
         List<Student> stuBeanList = new ArrayList<Student>();
         if (sid.isBlank() && sname.isBlank() && scourse.isBlank()) {
             stuBeanList = studentMapper.selectAllStudent();
-           
+
         } else {
             stuBeanList = studentMapper.selectStudentListByIdOrNameOrCourse(stuId, stuName, stuCourse);
         }
         if (stuBeanList.size() == 0) {
             model.addAttribute("msg", "Student not found!!");
-        } 
-        for (Student stu : stuBeanList) {
+        }
+        List<Student>distinctStudentList=stuBeanList.stream().distinct().collect(Collectors.toList());
+        
+        for (Student stu : distinctStudentList) {
             List<String> courseNameList = studentMapper.selectCourseNameList(stu.getSid());
             stu.setCourses(courseNameList);
         }
-        return new ModelAndView("STU003", "stuList", stuBeanList);
+        
+        return new ModelAndView("STU003", "stuList", distinctStudentList);
+    }
 
-        // List<Student>value=stuBeanList.stream().distinct().collect(Collectors.toList());
-        // return value;
-       
+    private void insertStudent_Course(String stuId, List<String> courseIdList) {
+        for (String courseId : courseIdList) {
+            studentMapper.insertStudent_Course(stuId, courseId);
+        }
+    }
 
+    private String GenerateNewStudentId() {
+        List<Student> stuList = studentMapper.selectAllStudent();
+        if (stuList.size() == 0) {
+            return "STU001";
+        } else {
+            int tempId = Integer.parseInt(stuList.get(stuList.size() - 1).getSid().substring(3)) + 1;
+            String stuId = String.format("STU%03d", tempId);
+            return stuId;
+        }
     }
 }

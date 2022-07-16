@@ -17,42 +17,42 @@ import com.studentRegistration.model.Course;
 
 @Controller
 public class CourseController {
-    @Autowired
-    CourseMapper courseMapper;
+	@Autowired
+	CourseMapper courseMapper;
 
-    @RequestMapping(value = "/setupRegisterCourse", method = RequestMethod.GET)
+	@RequestMapping(value = "/setupRegisterCourse", method = RequestMethod.GET)
 	public ModelAndView setupRegisterCourse() {
-		Course course= new Course();
-		List<Course> courseList =courseMapper.selectAllCourse();
-		if (courseList.size() == 0) {
-			course.setCid("COU001");
-		} else {
-			int tempId = Integer.parseInt(courseList.get(courseList.size() - 1).getCid().substring(3)) + 1;
-			String courseId = String.format("COU%03d", tempId);
-			course.setCid(courseId);
-		}
-		return new ModelAndView("BUD003","course",course);
+		String courseId = GenerateNewCourseId();
+		Course course = new Course();
+		course.setCid(courseId);
+
+		return new ModelAndView("BUD003", "course", course);
 	}
+
 	@RequestMapping(value = "/registerCourse", method = RequestMethod.POST)
 	public String registerCourse(@ModelAttribute("course") @Validated Course course, BindingResult bs,
 			ModelMap model) {
 		if (bs.hasErrors()) {
 			return "BUD003";
 		}
+		courseMapper.insertCourse(course);
+		model.addAttribute("msg", "Register Succesful !!");
+		
+		String courseId = GenerateNewCourseId();
+		course = new Course();
+		course.setCid(courseId);
+		model.addAttribute("course", course);
+		return "BUD003";
+	}
 
-			courseMapper.insertCourse(course);
-			model.addAttribute("msg", "Register Succesful !!");
-			 course=new Course();
-			List<Course> courseList = courseMapper.selectAllCourse();
-			if (courseList.size() == 0) {
-				course.setCid("COU001");
-			} else {
-				int tempId = Integer.parseInt(courseList.get(courseList.size() - 1).getCid().substring(3)) + 1;
-				String courseId = String.format("COU%03d", tempId);
-				course.setCid(courseId);
-			}
-			model.addAttribute("course",course);
-			return "BUD003";
+	private String GenerateNewCourseId() {
+		List<Course> courseList = courseMapper.selectAllCourse();
+		if (courseList.size() == 0) {
+			return "COU001";
+		} else {
+			int tempId = Integer.parseInt(courseList.get(courseList.size() - 1).getCid().substring(3)) + 1;
+			String courseId = String.format("COU%03d", tempId);
+			return courseId;
 		}
-    
+	}
 }

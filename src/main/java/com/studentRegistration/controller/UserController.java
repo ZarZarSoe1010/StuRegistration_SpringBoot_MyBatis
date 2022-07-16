@@ -41,17 +41,21 @@ public class UserController {
             model.addAttribute("msg", "Passwords do not match !!");
             model.addAttribute("user", user);
             return "USR001";
+        } else {
+            List<User> userList = userMapper.selectAllUserByEmail(user.getEmail());
+            if (userList.size() > 0) {
+
+                model.addAttribute("msg", "Email already registered !!");
+                model.addAttribute("user", user);
+                return "USR001";
+
+            }
         }
 
-        List<User> userList = userMapper.selectAllUser();
-        if (userList.size() == 0) {
-            user.setUid("USR001");
-        } else {
-            int tempId = Integer.parseInt(userList.get(userList.size() - 1).getUid().substring(3)) + 1;
-            String userId = String.format("USR%03d", tempId);
-            user.setUid(userId);
-        }
+        String userId = GernerateNewUserId();
+        user.setUid(userId);
         userMapper.insertUser(user);
+
         model.addAttribute("msg", "Register Successful !!");
         model.addAttribute("user", new User());
         return "USR001";
@@ -68,12 +72,20 @@ public class UserController {
             ModelMap model) {
         if (bs.hasErrors()) {
             return "USR002";
-        }
-        userMapper.updateUser(user);
-        if (!user.getPassword().equals(user.getCpwd())) {
+        } else if (!user.getPassword().equals(user.getCpwd())) {
             model.addAttribute("msg", "Passwords do not match !!");
             return "USR002";
+        } else {
+            List<User> userList = userMapper.selectAllUserByEmail(user.getEmail());
+            if (userList.size() > 0) {
+
+                model.addAttribute("msg", "Email already registered !!");
+                model.addAttribute("user", user);
+                return "USR002";
+
+            }
         }
+        userMapper.updateUser(user);
         model.addAttribute("msg", "Update Successful!!");
         return "USR002";
     }
@@ -101,6 +113,17 @@ public class UserController {
 
         model.addAttribute("userList", userBeanList);
         return "USR003";
+    }
+
+    private String GernerateNewUserId() {
+        List<User> userList = userMapper.selectAllUser();
+        if (userList.size() == 0) {
+            return "USR001";
+        } else {
+            int tempId = Integer.parseInt(userList.get(userList.size() - 1).getUid().substring(3)) + 1;
+            String userId = String.format("USR%03d", tempId);
+            return userId;
+        }
     }
 
 }

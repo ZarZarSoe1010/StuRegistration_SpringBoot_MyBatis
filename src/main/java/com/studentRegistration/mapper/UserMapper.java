@@ -24,6 +24,9 @@ public interface UserMapper {
 
     @Select ("select * from user")
     List<User>selectAllUser();
+
+    @Select ("select * from user where email=#{email}")
+    List<User>selectAllUserByEmail(String email);
     
     @Select ("select * from user where uid=#{uid}")
     User selectOneUser(String uid);
@@ -31,5 +34,6 @@ public interface UserMapper {
     @Select("select * from user where uid=#{uid} or name=#{name}")
     List<User> selectByFilter(String uid,String name);
 
+  
     
 }
