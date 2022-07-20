@@ -71,7 +71,7 @@
 								<td th:text="${data.sid}" />
 								<td th:text="${data.name}" />
 								<td>
-								<span th:each="courseName: ${data.courses}" th:text="${courseName}+','"></span>
+								<span th:each="course: ${data.courses}" th:text="${course}+','"></span>
 								</td>
 								<td><a th:href="@{/seeMore(selectedStudentId=${data.sid})}"><button
 											type="button" class="btn btn-secondary mb-2">See

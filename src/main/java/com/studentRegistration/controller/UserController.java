@@ -2,7 +2,6 @@ package com.studentRegistration.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -13,17 +12,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.studentRegistration.mapper.UserMapper;
 import com.studentRegistration.model.User;
+
+
 
 @Controller
 public class UserController {
     @Autowired
     UserMapper userMapper;
+  
 
     @RequestMapping(value = "/userManagement", method = RequestMethod.GET)
-    public String UserManagement(ModelMap model) {
+      public String UserManagement(ModelMap model) {
         return "redirect:/searchUser?id=&name=";
     }
 
@@ -114,6 +115,8 @@ public class UserController {
         model.addAttribute("userList", userBeanList);
         return "USR003";
     }
+
+  
 
     private String GernerateNewUserId() {
         List<User> userList = userMapper.selectAllUser();
